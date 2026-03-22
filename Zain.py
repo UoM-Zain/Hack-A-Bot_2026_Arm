@@ -6,16 +6,16 @@ from pal.utilities.keyboard import QKeyboard
 from pal.utilities.timing   import QTimer
 import time
 
-def PickUp(Arm, currentPos, Height = 0, theta = np.pi /13,  ground = np.array([0, np.pi/13,   -np.pi/3 , np.pi/2], dtype=np.float64)):
+def PickUp(Arm, currentPos, Height = 0, theta = np.pi /13,  ground = np.array([0, np.pi/13,   -np.pi/3 , np.pi/2], dtype=np.float64), angle = -np.pi/2):
     Arm.read_write_std(currentPos, gripper = 0.5333333333333)
-    time.sleep(1)
+    time.sleep(1.5)
     Arm.read_write_std(ground, gripper=0.5333333333333)
-    time.sleep(1)
+    time.sleep(1.5)
     Arm.read_write_std(ground, gripper=0)
-    time.sleep(1)
+    time.sleep(1.5)
     Arm.read_write_std(ground, gripper=0.5333333333333)
-    time.sleep(1)
-    Place(Arm, height = Height, theta= theta)
+    time.sleep(1.5)
+    Place(Arm, height = Height, theta= theta, angle = angle)
 
 def Place(Arm, angle = -np.pi/2, theta = np.pi/13, height = 0):
     phi = (theta + (np.pi/2) - np.arccos(1.1097*np.sin(theta) + 0.456  - (height * 0.403)))
@@ -23,13 +23,13 @@ def Place(Arm, angle = -np.pi/2, theta = np.pi/13, height = 0):
     above = [angle, np.pi/2, -phi, np.pi/2-theta+phi]
     position = np.array(arr, dtype=np.float64)
     Arm.read_write_std(above, gripper=0.5333333333333)
-    time.sleep(1)
+    time.sleep(1.5)
     Arm.read_write_std(position, gripper=0.5333333333333)
-    time.sleep(1)
+    time.sleep(1.5)
     Arm.read_write_std(position, gripper=0.4)
-    time.sleep(1)
+    time.sleep(1.5)
     Arm.read_write_std(np.array(above), gripper=0)
-    time.sleep(1)
+    time.sleep(1.5)
 
 
 def Manual(position, keyboard, speed = 0.03):
