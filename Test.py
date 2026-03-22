@@ -6,31 +6,19 @@ from pal.utilities.keyboard import QKeyboard
 from pal.utilities.timing   import QTimer
 import time
 
-def PickUp(Arm, currentPos):
-    Arm.read_write_std(currentPos, gripper = 0.5333333333333)
-    time.sleep(2)
+def PickUp(Arm):
+    Arm.read_write_std(gripper=0.5333333333333)
+    time.sleep(3)
     Arm.read_write_std(np.array([0, np.pi/13, -np.pi/2, 8*np.pi/9], dtype=np.float64), gripper=0.5333333333333)
-    time.sleep(2)
+    time.sleep(3)
     Arm.read_write_std(np.array([0, np.pi/13, -np.pi/2, 8*np.pi/9], dtype=np.float64), gripper=0)
-    time.sleep(2)
+    time.sleep(3)
     Arm.read_write_std(np.array([0, np.pi/13, -np.pi/2, 8*np.pi/9], dtype=np.float64), gripper=0.5333333333333)
-    time.sleep(2)
 
-def Manual(position, keyboard, speed = 0.03):
-    state = keyboard.states
-    height = 0
-    arr = [state[keyboard.K_A]-state[keyboard.K_D], state[keyboard.K_W]- state[keyboard.K_S]]
-    position[0] = position[0] + (arr[0])
-    position[1] = position[1] - (arr[1])
-    position[2] = 0 #np.pi-((np.arccos(1.1097*np.sin(position[1]) + 0.376 - 0.323*height))+position[1])
-    return position
-
-def Main():
-    mainArm = QArmMini(hardware=1, id=5)
-    position = mainArm.HOME_POSE
-    height = 0
+def Main(arm = QArmMini(hardware=1, id=5)):
     kbd         = QKeyboard()
-    groundPos   = np.array([0, np.pi/13, -np.pi/2, 5*np.pi/6], dtype=np.float64)
+    groundPos   = np.array([0, np.pi/13, -np.pi/2, 8*np.pi/9-0.1], dtype=np.float64)
+    kbdNav      = QArmMiniKeyboardNavigator(keyboard=kbd, initialPose=groundPos)
     myArmMath   = QArmMiniFunctions()
     timer       = QTimer(sampleRate=30.0, totalTime=300.0)
     clawPosition = 0
@@ -47,19 +35,15 @@ def Main():
             clawPosition = 0.5333333333
 
         ## Section C - QArm Mini hardware I/O
-        #position = Manual(position, kbd)
-        mainArm.read_write_std(
-            position, clawPosition)
+        arm.read_write_std(
+            kbdNav.move_joints_with_keyboard(timer.get_sample_time(), speed=np.pi/4), clawPosition)
 
         ## Section D - Record data for plotting
-        pose, rotationMatrix, gamma = myArmMath.forward_kinematics(mainArm.positionMeasured)
+        pose, rotationMatrix, gamma = myArmMath.forward_kinematics(arm.positionMeasured)
         if kbd.states[kbd.K_SPACE]:
             if not edge:
                 edge = 1
-                position = Manual(position, kbd)
-                mainArm.read_write_std(position, clawPosition)
-                #height = (height + 1)%3
-                #PickUp(mainArm, position)
+                PickUp(arm)
                 #print("pose = "+str(pose)+"\nrotationMatrix = "+str(rotationMatrix) + "\ngamma = "+str(gamma))
         else:
             edge = 0
@@ -69,4 +53,3 @@ def Main():
 
 
 Main()
-3
